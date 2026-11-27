@@ -496,6 +496,13 @@ function buildBG(){
   }
   c.globalAlpha = 1;
 
+  /* --- 파울 지역(그라운드 바탕) --- */
+  var foulG = c.createLinearGradient(0,H*0.46,0,H);
+  foulG.addColorStop(0,'#0a1d11');
+  foulG.addColorStop(1,'#07150c');
+  c.fillStyle = foulG;
+  c.fillRect(0, H*0.45, W, H*0.55);
+
   /* --- 전광판(대형 스크린) --- */
   var jw = W*0.44, jh = H*0.115, jx = W*0.5-jw/2, jy = H*0.175;
   c.save();
@@ -958,7 +965,7 @@ function drawPitcher(anim){
 }
 
 function drawBatter(){
-  var bx0 = W*0.5 - W*0.105;
+  var bx0 = W*0.5 - W*0.072;
   var by0 = H*0.955;
   var h = H*0.175;
   var jersey = (G.mode==='derby') ? '#5fd0ff' : (G.battingTeam===0 ? '#5fd0ff' : '#ff6b9d');
