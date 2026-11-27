@@ -1916,8 +1916,9 @@ else boot();
   window.__testlog = [];
   var q = new URLSearchParams(location.search);
   var mode = q.get('m') || 'derby';
-  var offsets = [0, -0.055, 0.075, -0.105, 0.025, -0.4, 0.015, 0.135, -0.02, 0.055];
-  var started = false, idx = 0, lastRelease = -1, lastBig = '', watch = null;
+  var offsets = mode==='2p1' ? [0.02,-0.03,0.04,-0.02,0.01,-0.05,0.03] 
+                             : [0, -0.055, 0.075, -0.105, 0.025, -0.4, 0.015, 0.135, -0.02, 0.055];
+  var started = false, idx = 0, lastRelease = -1, lastBig = '', halfSeen = '';
 
   function bigText(){ var b = document.querySelector('#bigText b'); return b ? b.textContent : ''; }
 
@@ -1925,9 +1926,8 @@ else boot();
     if(!window.__G || !window.__startGame) return;
     clearInterval(boot);
     started = true;
-    window.__startGame(mode, mode==='ai3' ? 3 : 0);
-    /* record what the banner said for each resolved pitch */
-    watch = setInterval(function(){
+    window.__startGame(mode==='2p1' ? '2p' : mode, mode==='ai3' ? 3 : (mode==='2p1'?1:0));
+    setInterval(function(){
       var t = bigText();
       if(t && t !== lastBig){
         lastBig = t;
@@ -1941,20 +1941,28 @@ else boot();
     if(!started) return;
     var P = window.__P, G = window.__G;
     if(!P || !G) return;
+    /* 2P: pitcher throws whenever the panel is ready */
+    if(G.mode==='2p' && G.phase==='pre' && !document.getElementById('pitchPanel').classList.contains('locked')){
+      var h = G.inning+'|'+G.half;
+      if(halfSeen !== h){
+        halfSeen = h;
+        window.__testlog.push({ half:h, score:G.score.slice(), bt:G.battingTeam });
+      }
+      document.getElementById('btnThrow').click();
+    }
     if(P.active && !P.resolved && P.releaseAt !== lastRelease){
       lastRelease = P.releaseAt;
       var plan = offsets[idx % offsets.length]; idx++;
-      var tgt = P;
-      var delay = (P.arriveAt - performance.now()/1000 + plan) * 1000;
+      var tgt = P, dls = (P.arriveAt - performance.now()/1000 + plan) * 1000;
       setTimeout(function(){
         if(tgt !== P || P.resolved) return;
-        var rec = { i: idx-1, plan: plan, before: +(performance.now()/1000 - P.arriveAt).toFixed(3) };
+        var rec = { plan: plan, off: null, banner: undefined };
         window.__testlog.push(rec);
         try{ window.__swing(); }catch(e){ rec.err = String(e); }
         rec.off = +P.off.toFixed(3);
-        rec.swung = P.swung;
-        rec.n = G.derby.n;
-      }, Math.max(0, delay));
+        rec.inn = G.inning; rec.half = G.half; rec.outs = G.outs;
+        rec.score = G.score.slice(); rec.bases = G.bases.slice();
+      }, Math.max(0, dls));
     }
   }, 25);
 })();
