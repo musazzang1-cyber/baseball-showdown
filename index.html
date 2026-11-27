@@ -1042,10 +1042,10 @@ function drawZone(){
   var visible = (G.phase==='windup' || G.phase==='flight');
   if(!visible) return;
   ctx.save();
-  ctx.globalAlpha = 0.22;
-  ctx.strokeStyle = '#bfe9ff';
-  ctx.lineWidth = 1.4;
-  ctx.setLineDash([5,5]);
+  ctx.globalAlpha = 0.34;
+  ctx.strokeStyle = '#cfeeff';
+  ctx.lineWidth = 1.6;
+  ctx.setLineDash([6,5]);
   ctx.strokeRect(ZONE.cx-ZONE.hw, ZONE.cy-ZONE.hh, ZONE.hw*2, ZONE.hh*2);
   ctx.restore();
 }
