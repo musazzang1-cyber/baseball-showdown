@@ -314,30 +314,34 @@ var A = (function(){
   function resume(){ if(ctx && ctx.state==='suspended'){ try{ ctx.resume(); }catch(e){} } }
   function noise(dur, f0, f1, vol, type, q){
     var c = init(); if(!c) return;
-    var src = c.createBufferSource(); src.buffer = nbuf; src.loop = true;
-    var flt = c.createBiquadFilter(); flt.type = type||'bandpass'; flt.Q = q||1;
-    var t = c.currentTime;
-    flt.frequency.setValueAtTime(Math.max(40,f0), t);
-    flt.frequency.exponentialRampToValueAtTime(Math.max(40,f1), t+dur);
-    var g = c.createGain();
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.linearRampToValueAtTime(Math.max(0.0002,vol), t+Math.min(0.03, dur*0.3));
-    g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
-    src.connect(flt); flt.connect(g); g.connect(master);
-    try{ src.start(t); src.stop(t+dur+0.03); }catch(e){}
+    try{
+      var src = c.createBufferSource(); src.buffer = nbuf; src.loop = true;
+      var flt = c.createBiquadFilter(); flt.type = type||'bandpass'; flt.Q.value = q||1;
+      var t = c.currentTime;
+      flt.frequency.setValueAtTime(Math.max(40,f0), t);
+      flt.frequency.exponentialRampToValueAtTime(Math.max(40,f1), t+dur);
+      var g = c.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.linearRampToValueAtTime(Math.max(0.0002,vol), t+Math.min(0.03, dur*0.3));
+      g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
+      src.connect(flt); flt.connect(g); g.connect(master);
+      src.start(t); src.stop(t+dur+0.03);
+    }catch(e){}
   }
   function tone(freq, dur, vol, type, glide, when){
     var c = init(); if(!c) return;
-    var o = c.createOscillator(); var g = c.createGain();
-    o.type = type||'sine';
-    var t = c.currentTime + (when||0);
-    o.frequency.setValueAtTime(freq, t);
-    if(glide) o.frequency.exponentialRampToValueAtTime(Math.max(30,glide), t+dur);
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.linearRampToValueAtTime(vol, t+0.012);
-    g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
-    o.connect(g); g.connect(master);
-    try{ o.start(t); o.stop(t+dur+0.03); }catch(e){}
+    try{
+      var o = c.createOscillator(); var g = c.createGain();
+      o.type = type||'sine';
+      var t = c.currentTime + (when||0);
+      o.frequency.setValueAtTime(freq, t);
+      if(glide) o.frequency.exponentialRampToValueAtTime(Math.max(30,glide), t+dur);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.linearRampToValueAtTime(vol, t+0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
+      o.connect(g); g.connect(master);
+      o.start(t); o.stop(t+dur+0.03);
+    }catch(e){}
   }
   return {
     init:init, resume:resume,
@@ -361,12 +365,13 @@ var A = (function(){
     },
     cheer:function(){ noise(0.9,500,1100,0.20,'bandpass',0.6); noise(0.9,1600,2100,0.08,'bandpass',1.1); },
     hr:function(){
-      var c = init(); if(!c) return;
-      noise(2.6, 380, 900, 0.26, 'bandpass', 0.5);
-      noise(2.6, 1500, 2200, 0.10, 'bandpass', 0.9);
-      var notes = [523,659,784,1046,1318];
-      for(var i=0;i<notes.length;i++) tone(notes[i], 0.24, 0.14, 'triangle', null, i*0.11);
-      for(var j=0;j<5;j++) tone(120, 0.18, 0.20, 'sine', 40, 0.5+j*0.42);
+      try{
+        noise(2.6, 380, 900, 0.26, 'bandpass', 0.5);
+        noise(2.6, 1500, 2200, 0.10, 'bandpass', 0.9);
+        var notes = [523,659,784,1046,1318];
+        for(var i=0;i<notes.length;i++) tone(notes[i], 0.24, 0.14, 'triangle', null, i*0.11);
+        for(var j=0;j<5;j++) tone(120, 0.18, 0.20, 'sine', 40, 0.5+j*0.42);
+      }catch(e){}
     },
     pop:function(when){
       tone(90, 0.2, 0.18, 'sine', 40, when||0);
@@ -788,6 +793,20 @@ function updateBoard(){
   $('sA').textContent = G.score[0];
   $('sB').textContent = G.score[1];
   var isDerby = (G.mode==='derby');
+  if(G.scene==='title'){
+    $('bInn').textContent = '1회';
+    $('bHalf').textContent = '▲';
+    $('tnA').textContent = '청팀';
+    $('tnB').textContent = '홍팀';
+    $('dB').parentNode.style.display='';
+    $('dS').parentNode.style.display='';
+    $('dO').parentNode.style.display='';
+    setDots($('dB'), 0, 3); setDots($('dS'), 0, 2); setDots($('dO'), 0, 2, 'pink');
+    $('situ').textContent = '플레이 볼!';
+    $('metaL').textContent = '타자';
+    $('metaR').textContent = '';
+    return;
+  }
   $('bInn').textContent = isDerby ? '더비' : (G.inning+'회');
   $('bHalf').textContent = isDerby ? '⚾' : (G.half===0 ? '▲' : '▼');
   $('tnA').textContent = isDerby ? '나' : '청팀';
