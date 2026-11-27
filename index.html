@@ -396,7 +396,7 @@ function sxy(x,z){ var p = proj(z); return [W*0.5 + x*p*W*CAM.kx, groundY(z)]; }
 function sxyz(x,y,z){ var p = proj(z); return [W*0.5 + x*p*W*CAM.kx, groundY(z) - y*p*H*CAM.hy]; }
 
 var ZONE = { cx:0, cy:0, hw:0, hh:0 };
-function layoutZone(){ ZONE.cx = W*0.52; ZONE.cy = H*0.785; ZONE.hw = W*0.135; ZONE.hh = H*0.062; }
+function layoutZone(){ ZONE.cx = W*0.525; ZONE.cy = H*0.855; ZONE.hw = W*0.115; ZONE.hh = H*0.046; }
 
 function resize(){
   var r = cv.parentElement.getBoundingClientRect();
@@ -835,6 +835,7 @@ function updateBoard(){
   $('t0src');
   $('metaL').textContent = labelBatter();
   $('metaR').textContent = (G.mode==='derby') ? ('타구 '+G.derby.n+'/'+G.derby.total) : (G.balls+'-'+G.strikes+' 카운트');
+  if(G.scene==='result'){ $('bInn').textContent = '종료'; $('bHalf').textContent = '■'; }
 }
 function labelBatter(){
   if(G.mode==='derby') return '나 · 타자';
@@ -1671,6 +1672,7 @@ function goTitle(){
   clearTimers();
   G.scene='title'; G.phase='idle'; P.active=false; FLY.on=false; PARTS.length=0;
   $('app').classList.remove('p2','derby');
+  $('pitchPanel').classList.add('hidden');
   setPitchUI(false);
   setSwingEnabled(false);
   refreshTitleBest();
@@ -1782,10 +1784,9 @@ function endGame(){
     stats = [
       ['점수', a+' : '+b2],
       ['이닝', G.innings+'이닝'],
-      ['청팀 안타', '-'],
-      ['결과', a>b2?'승리':(a<b2?'패배':'무승부')]
+      ['경기 방식', G.mode==='ai3'?'1인 vs AI':'2인 대전'],
+      ['결과', a>b2?(who[0]+' 승리'):(a<b2?(who[1]+' 승리'):'무승부')]
     ];
-    stats[2] = ['경기 방식', G.mode==='ai3'?'1인 vs AI':'2인 대전'];
   }
   showScreen('scrResult');
   $('resKicker').textContent = kicker;
